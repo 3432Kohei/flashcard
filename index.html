@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>瞬間英作文 Flashcards</title>
+  <style>
+    :root {
+      --primary-color: #4F46E5;
+      --primary-hover: #4338CA;
+      --bg-color: #F3F4F6;
+      --card-bg: #FFFFFF;
+      --text-main: #1F2937;
+      --text-sub: #6B7280;
+      --accent-color: #10B981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px 16px;
+    }
+
+    header {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary-color);
+    }
+
+    .progress-badge {
+      background-color: #E0E7FF;
+      color: var(--primary-color);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    /* Flashcard Container & 3D Flip */
+    .card-container {
+      width: 100%;
+      max-width: 480px;
+      height: 280px;
+      perspective: 1000px;
+      cursor: pointer;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 16px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 16px;
+      background-color: var(--card-bg);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 24px;
+      border: 1px solid #E5E7EB;
+    }
+
+    .card-front {
+      /* Front side default */
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+      background-color: #FAFAFA;
+      border-color: #C7D2FE;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .card-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-sub);
+    }
+
+    .count-badge {
+      font-size: 0.75rem;
+      background-color: #F3F4F6;
+      color: var(--text-sub);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .card-body {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .card-text {
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .card-back .card-text {
+      color: var(--primary-color);
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .tap-hint {
+      font-size: 0.75rem;
+      color: #9CA3AF;
+    }
+
+    .audio-btn {
+      background: none;
+      border: none;
+      color: var(--primary-color);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .audio-btn:hover {
+      background-color: #EEF2FF;
+    }
+
+    /* Controls */
+    .controls {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .btn-secondary {
+      background-color: #FFFFFF;
+      color: var(--text-main);
+      border: 1px solid #D1D5DB;
+    }
+
+    .btn-secondary:active {
+      background-color: #E5E7EB;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+    }
+
+    .btn-primary:active {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-shuffle {
+      background-color: #8B5CF6;
+      color: #FFFFFF;
+    }
+
+    .btn-shuffle:active {
+      background-color: #7C3AED;
+    }
+
+    /* Sub Controls & Reset */
+    .sub-controls {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+
+    .reset-btn {
+      background: none;
+      border: none;
+      color: #EF4444;
+      font-size: 0.85rem;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .status-text {
+      font-size: 0.8rem;
+      color: var(--text-sub);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>瞬間英作文 Flashcards</h1>
+    <div class="progress-badge" id="progress">1 / 15</div>
+  </header>
+
+  <!-- Flashcard -->
+  <div class="card-container" id="cardContainer" onclick="flipCard()">
+    <div class="card" id="card">
+      <!-- Front (Japanese) -->
+      <div class="card-face card-front">
+        <div class="card-header">
+          <span class="card-label">日本語</span>
+          <span class="count-badge" id="frontCount">練習回数: 0回</span>
+        </div>
+        <div class="card-body">
+          <p class="card-text" id="jaText">読み込み中...</p>
+        </div>
+        <div class="card-footer">
+          <span class="tap-hint">タップして英語を確認 🔄</span>
+        </div>
+      </div>
+
+      <!-- Back (English) -->
+      <div class="card-face card-back">
+        <div class="card-header">
+          <span class="card-label">English</span>
+          <button class="audio-btn" onclick="speakEnglish(event)" title="音声を聞く">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="card-body">
+          <p class="card-text" id="enText">Loading...</p>
+        </div>
+        <div class="card-footer">
+          <span class="tap-hint">タップして表に戻る 🔄</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Controls -->
+  <div class="controls">
+    <button class="btn btn-secondary" onclick="prevCard()">← 前へ</button>
+    <button class="btn btn-shuffle" onclick="shuffleCards()">🔀 シャッフル</button>
+    <button class="btn btn-primary" onclick="nextCard()">次へ →</button>
+  </div>
+
+  <!-- Reset & Extra Options -->
+  <div class="sub-controls">
+    <span class="status-text" id="saveStatus">自動保存完了</span>
+    <button class="reset-btn" onclick="resetAllData()">データを初期化</button>
+  </div>
+
+  <script>
+    // 瞬間英作文 サンプルデータセット
+    const defaultCards = [
+      { id: 1, ja: "これは何ですか？", en: "What is this?" },
+      { id: 2, ja: "私は毎朝コーヒーを飲みます。", en: "I drink coffee every morning." },
+      { id: 3, ja: "彼女は昨日、新しい本を買いました。", en: "She bought a new book yesterday." },
+      { id: 4, ja: "明日は晴れるでしょう。", en: "It will be sunny tomorrow." },
+      { id: 5, ja: "駅への行き方を教えていただけますか？", en: "Could you tell me how to get to the station?" },
+      { id: 6, ja: "彼は今、部屋で勉強しています。", en: "He is studying in his room right now." },
+      { id: 7, ja: "私は一度も京都に行ったことがありません。", en: "I have never been to Kyoto." },
+      { id: 8, ja: "この映画はとても面白いです。", en: "This movie is very interesting." },
+      { id: 9, ja: "窓を開けてもいいですか？", en: "Do you mind if I open the window?" },
+      { id: 10, ja: "遅れてすみません。電車の遅延がありました。", en: "I'm sorry I'm late. The train was delayed." },
+      { id: 11, ja: "週末は何をする予定ですか？", en: "What are you planning to do this weekend?" },
+      { id: 12, ja: "私は英語を話せるようになりたいです。", en: "I want to be able to speak English." },
+      { id: 13, ja: "それを手伝いましょうか？", en: "Shall I help you with that?" },
+      { id: 14, ja: "彼女は母親に似ています。", en: "She looks like her mother." },
+      { id: 15, ja: "準備ができたら教えてください。", en: "Please let me know when you are ready." }
+    ];
+
+    // LocalStorage keys
+    const KEY_CARDS = 'flashcard_order_v1';
+    const KEY_INDEX = 'flashcard_current_index_v1';
+    const KEY_COUNTS = 'flashcard_practice_counts_v1';
+
+    let cards = [];
+    let currentIndex = 0;
+    let counts = {};
+    let isFlipped = false;
+
+    // アプリ初期化
+    function initApp() {
+      // 1. カウントデータの読み込み
+      const savedCounts = localStorage.getItem(KEY_COUNTS);
+      counts = savedCounts ? JSON.parse(savedCounts) : {};
+
+      // 2. カード順序の読み込み
+      const savedCards = localStorage.getItem(KEY_CARDS);
+      if (savedCards) {
+        cards = JSON.parse(savedCards);
+      } else {
+        cards = [...defaultCards];
+      }
+
+      // 3. 進行インデックスの読み込み（途中再開）
+      const savedIndex = localStorage.getItem(KEY_INDEX);
+      if (savedIndex !== null) {
+        currentIndex = parseInt(savedIndex, 10);
+        if (isNaN(currentIndex) || currentIndex < 0 || currentIndex >= cards.length) {
+          currentIndex = 0;
+        }
+      } else {
+        currentIndex = 0;
+      }
+
+      renderCard();
+    }
+
+    // カードの表示更新
+    function renderCard() {
+      if (cards.length === 0) return;
+
+      const currentCard = cards[currentIndex];
+      const cardId = currentCard.id;
+
+      // 裏返っている場合はまず表に戻す（アニメーションなしでスムーズに）
+      const cardElem = document.getElementById('card');
+      if (isFlipped) {
+        cardElem.classList.remove('flipped');
+        isFlipped = false;
+      }
+
+      // テキストとカウントの更新
+      document.getElementById('jaText').textContent = currentCard.ja;
+      document.getElementById('enText').textContent = currentCard.en;
+      
+      const count = counts[cardId] || 0;
+      document.getElementById('frontCount').textContent = `練習回数: ${count}回`;
+
+      // プログレス表示
+      document.getElementById('progress').textContent = `${currentIndex + 1} / ${cards.length}`;
+
+      // インデックスを保存
+      localStorage.setItem(KEY_INDEX, currentIndex);
+      showSaveStatus();
+    }
+
+    // カードを裏返す（フリップ）
+    function flipCard() {
+      const cardElem = document.getElementById('card');
+      cardElem.classList.toggle('flipped');
+      isFlipped = !isFlipped;
+
+      // 初めて裏返したタイミングで練習回数をインクリメント
+      if (isFlipped) {
+        const currentCard = cards[currentIndex];
+        const cardId = currentCard.id;
+        counts[cardId] = (counts[cardId] || 0) + 1;
+        
+        // 保存
+        localStorage.setItem(KEY_COUNTS, JSON.stringify(counts));
+        document.getElementById('frontCount').textContent = `練習回数: ${counts[cardId]}回`;
+        
+        // 英語音声を自動再生したい場合はここを有効化
+        // speakEnglish();
+      }
+    }
+
+    // 次のカードへ
+    function nextCard() {
+      currentIndex = (currentIndex + 1) % cards.length;
+      renderCard();
+    }
+
+    // 前のカードへ
+    function prevCard() {
+      currentIndex = (currentIndex - 1 + cards.length) % cards.length;
+      renderCard();
+    }
+
+    // シャッフル機能 (Fisher-Yates アルゴリズム)
+    function shuffleCards() {
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+      currentIndex = 0;
+      localStorage.setItem(KEY_CARDS, JSON.stringify(cards));
+      renderCard();
+    }
+
+    // 英語の音声読み上げ (Web Speech API)
+    function speakEnglish(event) {
+      if (event) event.stopPropagation(); // フリップ動作のバブリング防止
+
+      const text = cards[currentIndex].en;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // 既存の読み上げを停止
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9; // 少しゆっくりめ
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert('お使いのブラウザは音声読み上げに対応していません。');
+      }
+    }
+
+    // 保存完了のステータス一時表示
+    function showSaveStatus() {
+      const statusElem = document.getElementById('saveStatus');
+      statusElem.style.opacity = '1';
+      setTimeout(() => {
+        statusElem.style.opacity = '0.5';
+      }, 1000);
+    }
+
+    // データの初期化
+    function resetAllData() {
+      if (confirm('練習回数や進行状況、シャッフル順序をすべて初期化しますか？')) {
+        localStorage.removeItem(KEY_CARDS);
+        localStorage.removeItem(KEY_INDEX);
+        localStorage.removeItem(KEY_COUNTS);
+        
+        cards = [...defaultCards];
+        currentIndex = 0;
+        counts = {};
+        renderCard();
+      }
+    }
+
+    // アプリ起動
+    window.onload = initApp;
+  </script>
+</body>
+</html>
